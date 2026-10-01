@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SubscriptionPulse &mdash; Pipeline Health</title>
+<style>
+  body { font-family: -apple-system, Helvetica, Arial, sans-serif; max-width: 720px;
+         margin: 48px auto; padding: 0 20px; color: #1a1a1a; }
+  h1 { font-size: 1.6rem; margin-bottom: 4px; }
+  .sub { color: #666; margin-bottom: 32px; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0 32px; }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid #e0e0e0; }
+  th { color: #666; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; }
+  .stats { display: flex; gap: 32px; margin-bottom: 24px; flex-wrap: wrap; }
+  .stat .value { font-size: 1.6rem; font-weight: 700; }
+  .stat .label { color: #666; font-size: 0.85rem; }
+  a.docs-link { display: inline-block; margin-top: 8px; padding: 10px 18px;
+                background: #1a1a1a; color: white; text-decoration: none;
+                border-radius: 6px; }
+  footer { margin-top: 40px; color: #999; font-size: 0.8rem; }
+</style>
+</head>
+<body>
+  <h1>SubscriptionPulse &mdash; Pipeline Health</h1>
+  <div class="sub">Real numbers, pulled live from Snowflake and dbt &mdash; not estimates.</div>
+ 
+  <div class="stats">
+    <div class="stat">
+      <div class="value">21,300</div>
+      <div class="label">Total rows in raw layer</div>
+    </div>
+    <div class="stat">
+      <div class="value">2026-10-01 14:40:24.950000</div>
+      <div class="label">Last data load (UTC)</div>
+    </div>
+    <div class="stat">
+      <div class="value">32 / 32 (100.0%)</div>
+      <div class="label">dbt tests passing</div>
+    </div>
+  </div>
+ 
+  <table>
+    <tr><th>Table</th><th>Rows</th><th>Last loaded</th></tr>
+    <tr><td>accounts</td><td>204</td><td>2026-10-01 14:40:21.395000</td></tr>
+<tr><td>usage_events</td><td>19,238</td><td>2026-10-01 14:40:22.728000</td></tr>
+<tr><td>invoices</td><td>1,530</td><td>2026-10-01 14:40:23.650000</td></tr>
+<tr><td>subscription_changes</td><td>328</td><td>2026-10-01 14:40:24.950000</td></tr>
+  </table>
+ 
+  <a class="docs-link" href="./dbt/">View full dbt docs &rarr;</a>
+ 
+  <footer>Generated 2026-10-01 21:41 UTC by generate_health_page.py</footer>
+</body>
+</html>

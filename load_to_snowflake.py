@@ -1,23 +1,22 @@
 """
-Loads extracted Parquet data from the S3 external stage into Snowflake.
+Loads new Parquet extracts from the S3 external stage into Snowflake.
 
-Each source table is loaded independently using COPY INTO. Snowflake's
-file-load metadata prevents previously processed files from being loaded
-again, allowing the load step to be rerun safely.
+Snowflake load metadata prevents previously processed files from being
+loaded again, making repeated executions idempotent.
 
 Connection settings are read from environment variables.
 """
-
+ 
 import os
-
+ 
 import snowflake.connector
 from dotenv import load_dotenv
-
+ 
 load_dotenv()
-
+ 
 TABLES = ["accounts", "usage_events", "invoices", "subscription_changes"]
-
-
+ 
+ 
 def get_connection():
     return snowflake.connector.connect(
         account=os.environ["SNOWFLAKE_ACCOUNT"],
@@ -28,8 +27,8 @@ def get_connection():
         database=os.environ.get("SNOWFLAKE_DATABASE", "subscriptionpulse"),
         schema=os.environ.get("SNOWFLAKE_SCHEMA", "raw"),
     )
-
-
+ 
+ 
 def load_table(cursor, table_name):
     # Preserve Parquet logical types so timestamp values are interpreted correctly.
     cursor.execute(
@@ -41,18 +40,21 @@ def load_table(cursor, table_name):
         """
     )
     results = cursor.fetchall()
-
+ 
+    # Explicitly populate ingestion timestamps when absent from source files.
+    cursor.execute(f"UPDATE {table_name} SET _loaded_at = CURRENT_TIMESTAMP() WHERE _loaded_at IS NULL")
+ 
     # A single summary row indicates that no new files were available to load.
     if len(results) == 1 and len(results[0]) == 1:
         print(f"{table_name}: {results[0][0]}")
         return
-
-    # Report newly loaded files separately from files already processed by Snowflake.
+ 
+    # Summarize newly loaded and previously processed files.
     loaded = sum(1 for row in results if row[1] == "LOADED")
     skipped = sum(1 for row in results if row[1] == "LOAD_SKIPPED")
     print(f"{table_name}: {loaded} file(s) loaded, {skipped} already-loaded file(s) skipped")
-
-
+ 
+ 
 def run_load():
     conn = get_connection()
     try:
@@ -62,7 +64,7 @@ def run_load():
     finally:
         conn.close()
     print("Load run complete.")
-
-
+ 
+ 
 if __name__ == "__main__":
     run_load()
