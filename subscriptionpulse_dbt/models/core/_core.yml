@@ -1,0 +1,84 @@
+version: 2
+
+models:
+  - name: fact_usage_events
+    description: >
+      GRAIN: one row per usage event (one row per event_id). Each row records
+      one thing one account did in the product at one moment in time.
+      Append-only: rows are never updated after they land.
+    columns:
+      - name: event_id
+        description: Unique ID of the event. This column defines the grain of the table.
+        tests: [not_null, unique]
+      - name: account_id
+        description: The account that did it. Join to dim_accounts on account_id, filtered to the version whose valid_from/valid_to range covers event_time, to see what plan the account was on when the event happened.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_accounts')
+              field: account_id
+      - name: event_type
+        description: What happened, such as login, task_created, task_completed, comment_added, teammate_invited or board_created.
+      - name: event_time
+        description: When the event happened in the product, not when it was loaded into the warehouse.
+        tests: [not_null]
+      - name: event_date
+        description: event_time cut down to the calendar date, for easy daily counts.
+
+  - name: fact_invoices
+    description: >
+      GRAIN: one row per invoice (one row per invoice_id). Each row is one bill
+      sent to one account on one date.
+    columns:
+      - name: invoice_id
+        description: Unique ID of the invoice. This column defines the grain of the table.
+        tests: [not_null, unique]
+      - name: account_id
+        description: The account that was billed. Join to dim_accounts the same way as fact_usage_events.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_accounts')
+              field: account_id
+      - name: invoice_date
+        description: The date the invoice was issued.
+      - name: amount
+        description: The billed amount. It stays positive for every status. Use is_paid to count only money actually collected.
+        tests: [not_null]
+      - name: status
+        description: paid, failed or refunded.
+        tests:
+          - accepted_values:
+              values: ["paid", "failed", "refunded"]
+      - name: payment_method
+        description: How the account pays, such as credit_card, paypal or bank_transfer.
+      - name: is_paid
+        description: True when status is paid.
+
+  - name: dim_accounts
+    description: >
+      GRAIN: one row per version of an account (Type 2 slowly changing
+      dimension). Built on top of the dim_accounts_snapshot dbt snapshot.
+      is_current = true marks each account's present-day row; there is
+      exactly one current row per account_id at any time.
+    columns:
+      - name: account_id
+        description: The account this version belongs to. Not unique alone — combine with valid_from for a unique row.
+        tests: [not_null]
+      - name: plan_tier
+        description: starter, pro or enterprise, as it was during this row's valid period.
+        tests:
+          - accepted_values:
+              values: ["starter", "pro", "enterprise"]
+      - name: status
+        description: active, paused or churned, as it was during this row's valid period.
+        tests:
+          - accepted_values:
+              values: ["active", "paused", "churned"]
+      - name: valid_from
+        description: When this version started being true.
+        tests: [not_null]
+      - name: valid_to
+        description: When this version stopped being true. Null means it is still true today.
+      - name: is_current
+        description: True when valid_to is null, meaning this is the account's present-day row.

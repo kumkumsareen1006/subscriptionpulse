@@ -1,0 +1,26 @@
+# --- Secrets / credentials — never commit these ---
+.env
+subscriptionpulse_dbt/profiles.yml
+
+# --- Python ---
+venv/
+__pycache__/
+*.pyc
+
+# --- Local/transient pipeline artifacts ---
+tmp_extract/
+
+# --- dbt (generic — matches at any depth, so subscriptionpulse_dbt/target/ etc. are covered) ---
+target/
+dbt_packages/
+
+# --- Logs (root, airflow/, subscriptionpulse_dbt/ — generic catches all of them) ---
+logs/
+
+# --- macOS ---
+.DS_Store
+
+# --- dbt local config ---
+.user.yml
+
+airflow/config/airflow.cfg

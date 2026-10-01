@@ -1,0 +1,48 @@
+version: 2
+
+models:
+  - name: stg_accounts
+    description: >
+      Cleaned, deduplicated view of raw.accounts — exactly one row per
+      account_id, the most recently extracted version (see Day 9 fix).
+    columns:
+      - name: account_id
+        tests: [not_null, unique]
+      - name: plan_tier
+        tests:
+          - accepted_values:
+              values: ['starter', 'pro', 'enterprise']
+      - name: status
+        tests:
+          - accepted_values:
+              values: ['active', 'paused', 'churned']
+
+  - name: stg_usage_events
+    description: Cleaned view of raw.usage_events, one row per event.
+    columns:
+      - name: event_id
+        tests: [not_null, unique]
+      - name: account_id
+        tests: [not_null]
+      - name: event_time
+        tests: [not_null]
+
+  - name: stg_invoices
+    description: Cleaned view of raw.invoices, one row per invoice.
+    columns:
+      - name: invoice_id
+        tests: [not_null, unique]
+      - name: account_id
+        tests: [not_null]
+      - name: status
+        tests:
+          - accepted_values:
+              values: ['paid', 'failed', 'refunded']
+
+  - name: stg_subscription_changes
+    description: Cleaned view of raw.subscription_changes, one row per plan move.
+    columns:
+      - name: account_id
+        tests: [not_null]
+      - name: new_plan
+        tests: [not_null]

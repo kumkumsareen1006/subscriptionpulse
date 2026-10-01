@@ -1,0 +1,11 @@
+version: 2
+
+snapshots:
+  - name: dim_accounts_snapshot
+    description: >
+      Type 2 history of the accounts table, built by dbt's snapshot feature.
+      Every time an account's row changes (plan_tier, status, or anything
+      else), the previous version is closed off with a dbt_valid_to date and
+      a new row is inserted. Run with `dbt snapshot`, separately from
+      `dbt run`. dim_accounts (in models/core) renames its columns into
+      plain valid_from / valid_to / is_current.

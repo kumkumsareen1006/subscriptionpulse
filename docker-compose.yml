@@ -1,0 +1,20 @@
+
+# PostgreSQL service for the SubscriptionPulse source database.
+# schema.sql initializes the database when the data volume is first created.
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: subscriptionpulse-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: subscriptionpulse
+    ports:
+      - "5433:5432"          # Expose PostgreSQL on host port 5433.
+    volumes:
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - pgdata:/var/lib/postgresql/data   # Persist database data across container restarts.
+
+volumes:
+  pgdata:

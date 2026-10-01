@@ -1,0 +1,11 @@
+version: 2
+
+sources:
+  - name: raw
+    database: subscriptionpulse
+    schema: raw
+    tables:
+      - name: accounts
+      - name: usage_events
+      - name: invoices
+      - name: subscription_changes
